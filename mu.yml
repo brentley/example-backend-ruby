@@ -1,0 +1,39 @@
+---
+environments:
+  - name: acceptance
+  - name: backend
+    cluster:
+      keyName: macbook
+    loadbalancer:
+      internal: true 
+      hostedzone: internal.service
+    provider: ecs-fargate
+service:
+  desiredCount: 3
+  port: 4567
+  pathPatterns:
+  - /*
+  healthEndpoint: /health
+  networkMode: awsvpc   
+  deploymentConfiguration:
+    minimumHealthyPercent: 100
+    maximumPercent: 200
+  pipeline:
+    source:
+      repo: brentley/example-backend
+    build:
+      disabled: false
+    acceptance:
+      disabled: false
+      environment: backend
+    production:
+      disabled: true
+  database:
+templates:
+  mu-service-example-backend-backend:
+    Resources:
+      EcsService:
+        Properties:
+          DeploymentConfiguration:
+            MaximumPercent: 200
+            MinimumHealthyPercent: 100
