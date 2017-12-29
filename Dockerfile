@@ -1,14 +1,13 @@
-FROM ruby:alpine
+FROM alpine:3.6
 
 # Install Sinatra
 RUN apk --update upgrade && \
     apk --no-cache add curl ca-certificates bash && \
-    apk --no-cache add ruby ruby-dev ruby-json && \
-    gem install sinatra --no-ri --no-rdoc && \
-    # apk --no-cache add ruby ruby-dev ruby-json ruby-libs && \
-    apk --no-cache add g++ musl-dev make && \
-    gem install sinatra --no-ri --no-rdoc && \
-    gem install thin --no-ri --no-rdoc 
+    apk --no-cache add ruby ruby-json && \
+    apk --no-cache add ruby-dev g++ musl-dev make && \
+    gem install sinatra thin --no-ri --no-rdoc && \
+    apk --no-cache del ruby-dev g++ musl-dev make && \
+    rm -rvf /root/* /var/cache/*
 
 # Source code should be in the /usr/src/app folder
 WORKDIR /usr/src/app
