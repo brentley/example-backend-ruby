@@ -1,12 +1,6 @@
 version: 0.2
 
 phases:
-  pre_build:
-    commands:
-      - env
-      - set
-      - ls
-      - pwd
   build:
     commands:
       - docker build -t myimage .
