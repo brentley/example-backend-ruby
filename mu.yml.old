@@ -1,0 +1,83 @@
+---
+environments:
+  - name: acceptance
+  - name: backend
+    vpcTarget:
+        vpcId: vpc-eb775393            # The id of the VPC to launch ECS container instances into
+        instanceSubnetIds:          # The list of subnets to use for ECS container instances
+          - subnet-b4f9749b
+          - subnet-16efa75d
+          - subnet-800187dd
+        elbSubnetIds:               # The list of subnets to use for ELBs
+          - subnet-eff77ac0
+          - subnet-a9d49ce2
+          - subnet-d478fe89
+    cluster:
+      keyName: macbook
+    loadbalancer:
+      internal: true
+      hostedzone: internal.service
+    provider: ecs-fargate
+service:
+  desiredCount: 3
+  port: 4567
+  pathPatterns:
+  - /*
+  healthEndpoint: /health
+  networkMode: awsvpc
+  deploymentConfiguration:
+    minimumHealthyPercent: 100
+    maximumPercent: 200
+  pipeline:
+    source:
+      repo: brentley/example-backend
+    build:
+      disabled: false
+      image: aws/codebuild/docker:17.09.0
+    acceptance:
+      disabled: false
+      image: aws/codebuild/docker:17.09.0
+      environment: backend
+    production:
+      disabled: true
+  database:
+templates:
+  mu-service-example-backend-backend:
+    Resources:
+      EcsService:
+        Properties:
+          DeploymentConfiguration:
+            MaximumPercent: 200
+            MinimumHealthyPercent: 100
+# since I will have backend services, create a private ALB to handle
+# internal only traffic
+  mu-iam-common:
+    Resources:
+      CloudFormationRole:
+        Type: AWS::IAM::Role
+        Properties:
+          Policies:
+            - PolicyName: update-route53-backend
+              PolicyDocument:
+                Version: '2012-10-17'
+                Statement:
+                - Action:
+                  - route53:CreateHostedZone
+                  - route53:UpdateHostedZoneComment
+                  - route53:ListQueryLoggingConfigs
+                  Resource: '*'
+                  Effect: Allow
+  mu-target-backend:
+    Resources:
+      DnsBackend:
+        Type: "AWS::Route53::HostedZone"
+        Properties:
+          Name: "internal.service"
+          VPCs:
+            -
+              VPCRegion:
+                Fn::Sub: ${AWS::Region}
+              VPCId:
+                Ref: VpcId
+#                Fn::ImportValue:
+#                  Fn::Sub: ${VpcId}
