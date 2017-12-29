@@ -3,15 +3,15 @@ environments:
   - name: acceptance
   - name: backend
     vpcTarget:
-        vpcId: vpc-f8ac8980            # The id of the VPC to launch ECS container instances into
+        vpcId: vpc-eb775393            # The id of the VPC to launch ECS container instances into
         instanceSubnetIds:          # The list of subnets to use for ECS container instances
-          - subnet-91cb46be
-          - subnet-aba0e8e0
-          - subnet-624bcd3f
+          - subnet-b4f9749b
+          - subnet-16efa75d
+          - subnet-800187dd
         elbSubnetIds:               # The list of subnets to use for ELBs
-          - subnet-ecd954c3
-          - subnet-e0bdf5ab
-          - subnet-5c48ce01
+          - subnet-eff77ac0
+          - subnet-a9d49ce2
+          - subnet-d478fe89
     cluster:
       keyName: macbook
     loadbalancer:
@@ -47,3 +47,35 @@ templates:
           DeploymentConfiguration:
             MaximumPercent: 200
             MinimumHealthyPercent: 100
+# since I will have backend services, create a private ALB to handle
+# internal only traffic
+  mu-iam-common:
+    Resources:
+      CloudFormationRole:
+        Type: AWS::IAM::Role
+        Properties:
+          Policies:
+            - PolicyName: update-route53-backend
+              PolicyDocument:
+                Version: '2012-10-17'
+                Statement:
+                - Action:
+                  - route53:CreateHostedZone
+                  - route53:UpdateHostedZoneComment
+                  - route53:ListQueryLoggingConfigs
+                  Resource: '*'
+                  Effect: Allow
+  mu-target-backend:
+    Resources:
+      DnsBackend:
+        Type: "AWS::Route53::HostedZone"
+        Properties:
+          Name: "internal.service"
+          VPCs:
+            -
+              VPCRegion:
+                Fn::Sub: ${AWS::Region}
+              VPCId:
+                Ref: VpcId
+#                Fn::ImportValue:
+#                  Fn::Sub: ${VpcId}
