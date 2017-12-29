@@ -2,10 +2,20 @@
 environments:
   - name: acceptance
   - name: backend
+    vpcTarget:
+        vpcId: vpc-f8ac8980            # The id of the VPC to launch ECS container instances into
+        instanceSubnetIds:          # The list of subnets to use for ECS container instances
+          - subnet-91cb46be
+          - subnet-aba0e8e0
+          - subnet-624bcd3f
+        elbSubnetIds:               # The list of subnets to use for ELBs
+          - subnet-ecd954c3
+          - subnet-e0bdf5ab
+          - subnet-5c48ce01
     cluster:
       keyName: macbook
     loadbalancer:
-      internal: true 
+      internal: true
       hostedzone: internal.service
     provider: ecs-fargate
 service:
@@ -14,7 +24,7 @@ service:
   pathPatterns:
   - /*
   healthEndpoint: /health
-  networkMode: awsvpc   
+  networkMode: awsvpc
   deploymentConfiguration:
     minimumHealthyPercent: 100
     maximumPercent: 200
