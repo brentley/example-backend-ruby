@@ -13,9 +13,9 @@ phases:
   post_build:
     commands:
       - docker pull anchore/cli
-      - docker run -d -v /var/run/docker.sock:/var/run/docker.sock --name anchore anchore/cli:latest
+      - docker run -d -v $(pwd):/source-dir -v /var/run/docker.sock:/var/run/docker.sock --name anchore anchore/cli:latest
       - docker exec anchore anchore feeds sync
-      - docker exec anchore anchore analyze --image myimage --dockerfile ./Dockerfile
+      - docker exec anchore anchore analyze --image myimage --dockerfile /source-dir/Dockerfile
 
 artifacts:
   files:
