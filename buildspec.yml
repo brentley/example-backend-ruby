@@ -1,9 +1,21 @@
 version: 0.2
 
 phases:
+  pre_build:
+    commands:
+      - env
+      - set
+      - ls
+      - pwd
   build:
     commands:
       - echo '...replace with real build commands...'
+  post_build:
+    commands:
+      - docker pull anchore/cli
+      - docker run -d -v /var/run/docker.sock:/var/run/docker.sock --name anchore anchore/cli:latest
+      - docker exec anchore anchore feeds sync
+      - docker exec anchore anchore analyze --image <myimage> --dockerfile </path/to/Dockerfile>
 
 artifacts:
   files:
