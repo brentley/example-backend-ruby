@@ -9,13 +9,13 @@ phases:
       - pwd
   build:
     commands:
-      - echo '...replace with real build commands...'
+      - docker build -t myimage .
   post_build:
     commands:
       - docker pull anchore/cli
       - docker run -d -v /var/run/docker.sock:/var/run/docker.sock --name anchore anchore/cli:latest
       - docker exec anchore anchore feeds sync
-      - docker exec anchore anchore analyze --image <myimage> --dockerfile </path/to/Dockerfile>
+      - docker exec anchore anchore analyze --image myimage --dockerfile /root/Dockerfile
 
 artifacts:
   files:
