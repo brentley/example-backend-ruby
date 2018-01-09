@@ -12,8 +12,6 @@ environments:
           - subnet-eff77ac0
           - subnet-a9d49ce2
           - subnet-d478fe89
-    cluster:
-      keyName: macbook
     loadbalancer:
       internal: true
       hostedzone: internal.service
@@ -25,9 +23,6 @@ service:
   - /*
   healthEndpoint: /health
   networkMode: awsvpc
-  deploymentConfiguration:
-    minimumHealthyPercent: 100
-    maximumPercent: 200
   pipeline:
     source:
       repo: brentley/example-backend
@@ -40,15 +35,7 @@ service:
       environment: backend
     production:
       disabled: true
-  database:
 templates:
-  mu-service-example-backend-backend:
-    Resources:
-      EcsService:
-        Properties:
-          DeploymentConfiguration:
-            MaximumPercent: 200
-            MinimumHealthyPercent: 100
 # since I will have backend services, create a private ALB to handle
 # internal only traffic
   mu-iam-common:
@@ -63,6 +50,7 @@ templates:
                 Statement:
                 - Action:
                   - route53:CreateHostedZone
+                  - route53:DeleteHostedZone
                   - route53:UpdateHostedZoneComment
                   - route53:ListQueryLoggingConfigs
                   Resource: '*'
@@ -79,5 +67,3 @@ templates:
                 Fn::Sub: ${AWS::Region}
               VPCId:
                 Ref: VpcId
-#                Fn::ImportValue:
-#                  Fn::Sub: ${VpcId}
